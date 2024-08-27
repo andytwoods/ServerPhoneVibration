@@ -27,6 +27,7 @@ function connectWebSocket() {
 
     socket.onmessage = function(event) {
         const message = JSON.parse(event.data);
+        console.log(message, 22)
         if (message.type === 'vibrate') {
             navigator.vibrate(message.pattern);
         }

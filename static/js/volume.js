@@ -1,4 +1,4 @@
-const visualizer = document.getElementById('visualizer');
+const volumeBar = document.getElementById('volumeBar');
 const thresholdSlider = document.getElementById('threshold');
 const thresholdDisplay = document.getElementById('thresholdDisplay');
 const startButton = document.getElementById('startButton');
@@ -22,14 +22,13 @@ startButton.addEventListener('click', () => {
 
 function connectWebSocket() {
     let location = window.location.href;
-    location = location.split("/volume").join("")
-    if(location.indexOf("https")!==-1) {
-        location = location.split("https://").join("")
-        location = "wss://" + location
-    }
-    else{
-        location = location.split("http://").join("")
-        location = "ws://" + location
+    location = location.split("/volume").join("");
+    if(location.indexOf("https") !== -1) {
+        location = location.split("https://").join("");
+        location = "wss://" + location;
+    } else {
+        location = location.split("http://").join("");
+        location = "ws://" + location;
     }
     socket = new WebSocket(location + '/volume_ws');
 
@@ -61,47 +60,19 @@ function visualize(stream) {
     javascriptNode.onaudioprocess = function() {
         analyser.getByteFrequencyData(dataArray);
         const volume = dataArray.reduce((acc, val) => acc + val, 0) / dataArray.length;
-        drawVisualizer(dataArray);
+
+        // Update the volume bar width
+        const volumePercentage = Math.min((volume / 255) * 100, 100);
+        volumeBar.style.width = `${volumePercentage}%`;
+        volumeBar.style.backgroundColor = volume > threshold ? 'red' : 'green';
 
         if (volume > threshold) {
-            socket.send(JSON.stringify({ volume: volume }));
+            socket.send(JSON.stringify({ volume: Math.round(volume) }));
         }
     };
 
     microphone.connect(javascriptNode);
     javascriptNode.connect(audioContext.destination);
-}
-
-function drawVisualizer(dataArray) {
-    const canvasCtx = visualizer.getContext('2d');
-    const width = visualizer.width;
-    const height = visualizer.height;
-
-    canvasCtx.clearRect(0, 0, width, height);
-
-    canvasCtx.fillStyle = 'rgb(200, 200, 200)';
-    canvasCtx.fillRect(0, 0, width, height);
-
-    const barWidth = (width / dataArray.length) * 2.5;
-    let barHeight;
-    let x = 0;
-
-    for (let i = 0; i < dataArray.length; i++) {
-        barHeight = dataArray[i] / 2;
-        const color = barHeight > threshold ? 'red' : 'green';
-
-        canvasCtx.fillStyle = color;
-        canvasCtx.fillRect(x, height - barHeight / 2, barWidth, barHeight);
-
-        x += barWidth + 1;
-    }
-
-    // Draw the threshold line
-    canvasCtx.strokeStyle = 'black';
-    canvasCtx.beginPath();
-    canvasCtx.moveTo(0, height - threshold / 2);
-    canvasCtx.lineTo(width, height - threshold / 2);
-    canvasCtx.stroke();
 }
 
 async function init() {
