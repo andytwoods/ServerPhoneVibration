@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volume Detection</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+        #thresholdDisplay {
+            margin-top: 10px;
+        }
+    </style>
+    <script defer src="static/js/volume.js"></script>
+</head>
+<body>
+<h1>Volume Detection Page</h1>
+<canvas id="visualizer" width="600" height="100"></canvas>
+<div>
+    <label for="threshold">Volume Threshold:</label>
+    <input type="range" id="threshold" min="0" max="100" value="50">
+    <span id="thresholdDisplay">50</span>
+</div>
+<button id="startButton">Start Microphone</button>
+<div id="output"></div>
+</body>
+</html>
